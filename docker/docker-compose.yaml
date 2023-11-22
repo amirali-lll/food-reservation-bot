@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:latest
+    env_file:
+      - ../.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - 5431:5432
+
+
+  web:
+    build: 
+      context: ../web
+      dockerfile: ../web/docker/Dockerfile
+    command: ./docker/docker-entrypoint.sh
+    depends_on:
+      - postgres
+    ports:
+      - 8000:8000
+    environment:
+      - DEBUG="True"
+  
+    restart: always
+    volumes:
+      - ../web:/app
+
+
+  bot:
+    build:
+      context: ../bot
+      dockerfile: ../bot/docker/Dockerfile
+    env_file:
+      - ../.env
+    depends_on:
+      - postgres
+    volumes:
+      - ../bot:/app
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ../:/project
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+
+    
+
+
+volumes:
+  postgres_data:

@@ -22,4 +22,5 @@ urlpatterns = [
     path("__debug__/", include("debug_toolbar.urls")),
     path('api/v1/', include('core.urls')),
     path('api/v1/', include('food.urls')),
+    path('', include('core.urls')),
 ]

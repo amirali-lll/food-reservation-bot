@@ -27,7 +27,8 @@ class DailyMenuAdmin(admin.ModelAdmin):
     list_display = ('id', 'company', 'day', 'meal')
     search_fields = ('company__name', 'day', 'meal')
     filter_horizontal = ('foods', 'desserts', 'beverages')
-    autocomplete_fields = ('foods', 'desserts', 'beverages', 'company')
+    autocomplete_fields = ('foods', 'company')
+    filter_horizontal = ('beverages', 'desserts',)
     
     
     

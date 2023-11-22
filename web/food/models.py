@@ -7,7 +7,8 @@ from django.core.exceptions import ValidationError
 class Participant(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='participants')
     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='participants')
-    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def save(self, *args, **kwargs):
         if Participant.objects.filter(user=self.user, company=self.company).exists():

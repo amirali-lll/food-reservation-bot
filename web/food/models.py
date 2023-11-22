@@ -13,6 +13,10 @@ class Participant(models.Model):
         if Participant.objects.filter(user=self.user, company=self.company).exists():
             raise ValidationError('User is already a participant of this company.')
         super(Participant, self).save(*args, **kwargs)
+        
+    class Meta:
+        verbose_name = 'کاربر'
+        verbose_name_plural = 'کاربران'
     
     
     
@@ -24,6 +28,10 @@ class Order(models.Model):
     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='orders')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'سفارش'
+        verbose_name_plural = 'سفارشات'
 
 
 
@@ -54,6 +62,11 @@ class DailyMenu(models.Model):
     def __str__(self):
         return self.company.name + ' ' + self.day + ' ' + self.meal
     
+    class Meta :
+        verbose_name = 'منوی روزانه'
+        verbose_name_plural = 'منوهای روزانه'
+        unique_together = ('company', 'day', 'meal')
+    
      
     
 class Company(models.Model):
@@ -70,6 +83,10 @@ class Company(models.Model):
     def __str__(self):
         return self.name
     
+    class Meta :
+        verbose_name = 'شرکت'
+        verbose_name_plural = 'شرکت ها'
+    
 
 
 class Food(models.Model):
@@ -81,15 +98,28 @@ class Food(models.Model):
     def __str__(self):
         return self.name
     
+    class Meta:
+        verbose_name = 'غذا'
+        verbose_name_plural = 'غذاها'
+        unique_together = ('name', 'company')
+    
 class Dessert(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
     def __str__(self):
         return self.name
     
+    class Meta:
+        verbose_name = 'دسر'
+        verbose_name_plural = 'دسرها'
+    
 class Beverage(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
     def __str__(self):
         return self.name
+    
+    class Meta:
+        verbose_name = 'نوشیدنی'
+        verbose_name_plural = 'نوشیدنی ها'
 

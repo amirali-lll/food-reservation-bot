@@ -2,6 +2,7 @@ import datetime,logging
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.serializers import ValidationError
 from .models import DailyMenu,Order ,Participant,Company,Food,Dessert,Beverage
 
 logger = logging.getLogger(__name__)
@@ -59,7 +60,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = Order
-        fields = ('id','food','user', 'dessert', 'beverage', 'company', 'created_at', 'updated_at')
+        fields = ('id','food','user', 'dessert', 'beverage','rice', 'company', 'created_at', 'updated_at')
                 
 
 
@@ -69,12 +70,12 @@ class MakeOrderSerializer(OrderSerializer):
     user_first_name = serializers.CharField(required=False,write_only=True)
     order_type  = serializers.CharField(required=False,write_only=True)
     item_id = serializers.IntegerField(required=False,write_only=True)
-    rice = serializers.BooleanField(required=False,write_only=True)
+
     
     
     class Meta:
         model  = Order
-        fields = ('id','item_id','company', 'created_at', 'updated_at','telegram_id','username','user_first_name','order_type')
+        fields = ('id','item_id','company','rice', 'created_at', 'updated_at','telegram_id','username','user_first_name','order_type')
     
     
     
@@ -88,7 +89,7 @@ class MakeOrderSerializer(OrderSerializer):
         if order_type == 'food':
             food_id = item_id
         else:
-            raise ValueError('ابتدا غذا را انتخاب کنید')
+            raise ValidationError('ابتدا غذا را انتخاب کنید')
         user = get_user_model().objects.get_or_create(username=username,telegram_id=telegram_id,first_name=user_first_name)[0]
         food = Food.objects.get(id=food_id)
         rice = food.have_rice
@@ -99,21 +100,27 @@ class MakeOrderSerializer(OrderSerializer):
     def update(self, instance, validated_data):
         order_type = validated_data['order_type']
         if order_type == 'food':
-            instance.food_id = validated_data['item_id']
+            food = Food.objects.get(id=validated_data['item_id'])
+            instance.food = food
+            instance.rice = food.have_rice
+            instance.dessert = None if not food.have_dessert else instance.dessert
+            instance.beverage = None if not food.have_beverage else instance.beverage
         elif order_type == 'dessert':
-            if  instance.food.have_dessert or (instance.food.have_rice and instance.order.rice==False):
+            if  instance.food.have_dessert or (instance.food.have_rice and instance.rice==False):
                 instance.dessert_id = validated_data['item_id']
             else :
-                raise ValueError('نمیتوانید دسر را برای این غذا انتخاب کنید')
+                raise ValidationError('نمیتوانید دسر را برای این غذا انتخاب کنید')
         elif order_type == 'beverage':
             if not instance.food.have_beverage:
-                raise ValueError('این غذا نوشیدنی ندارد')
+                raise ValidationError('این غذا نوشیدنی ندارد')
             instance.beverage_id = validated_data['item_id']
         elif order_type == 'rice':
             if not instance.food.have_rice:
-                raise ValueError('برای این غذا برنج تعریف نشده است')
+                raise ValidationError('برای این غذا برنج تعریف نشده است')
             instance.rice = validated_data['rice']
+            if instance.rice and instance.dessert and not instance.food.have_dessert:
+                instance.dessert = None
         else:
-            raise ValueError('نوع سفارش مشخص نیست')
+            raise ValidationError('نوع سفارش مشخص نیست')
         instance.save()
         return instance

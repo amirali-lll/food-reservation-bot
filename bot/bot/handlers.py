@@ -2,9 +2,8 @@ import json,datetime,requests,logging
 from telegram import Update,InlineKeyboardButton,InlineKeyboardMarkup
 from telegram.ext import CommandHandler,ContextTypes,CallbackQueryHandler
 from bot.conf import HOST,BASE_URL
-from bot.persaindate import get_today_in_persian
 from food.order import order 
-from food.menu import get_menu_json,get_menu_markup
+from food.menu import get_menu_json,get_menu_markup,get_menu_text
 
 
 logger = logging.getLogger(__name__)
@@ -29,9 +28,8 @@ async def menu(update :Update, context : ContextTypes.DEFAULT_TYPE):
     
 async def send_menu(update :Update, context : ContextTypes.DEFAULT_TYPE):
     menu_markup = get_menu_markup()
-    today = get_today_in_persian()
-    reply_message = f" سلام صبح بخیر😁 .\n منوی روز {today}📅.\n لطفا غذای و دورچین مورد نظر خود را انتخاب کنید👇👇👇"
-    await update.message.reply_text(reply_message,reply_markup=menu_markup)
+    menu_text   = get_menu_text()
+    await update.message.reply_text(menu_text,reply_markup=menu_markup)
     
 
 async def food_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -66,25 +64,25 @@ async def main_menu(update :Update, context : ContextTypes.DEFAULT_TYPE):
     await query.edit_message_text("لطفا غذای و دورچین مورد نظر خود را انتخاب کنید👇👇👇",reply_markup=get_menu_markup())
     
 
-def desserts_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def desserts_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     try :
         dessert_id = int(query.data.split('-')[2])
         user = update.effective_user
         order(user,'dessert',dessert_id)
-        query.answer('ثبت شد')
+        await query.answer('ثبت شد')
     except Exception as e:
-            query.answer("متاسفانه سفارش شما ثبت نشد. لطفا مجددا تلاش کنید.",show_alert=True)
+            await query.answer("متاسفانه سفارش شما ثبت نشد. لطفا مجددا تلاش کنید.",show_alert=True)
             
-def beverages_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def beverages_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     try :
         beverage_id = int(query.data.split('-')[2])
         user = update.effective_user
         order(user,'beverage',beverage_id)
-        query.answer('ثبت شد')
+        await query.answer('ثبت شد')
     except Exception as e:
-            query.answer("متاسفانه سفارش شما ثبت نشد. لطفا مجددا تلاش کنید.",show_alert=True)
+            await query.answer("متاسفانه سفارش شما ثبت نشد. لطفا مجددا تلاش کنید.",show_alert=True)
         
 
 

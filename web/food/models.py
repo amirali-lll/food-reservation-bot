@@ -19,6 +19,8 @@ class Participant(models.Model):
         verbose_name = 'کاربر'
         verbose_name_plural = 'کاربران'
     
+    def __str__(self) -> str:
+        return f"{self.user.first_name} {self.company.name}"
     
     
 class Order(models.Model):
@@ -27,6 +29,7 @@ class Order(models.Model):
     beverage = models.ForeignKey('Beverage', on_delete=models.CASCADE, null=True, blank=True)
     participant = models.ForeignKey('Participant', on_delete=models.CASCADE, related_name='orders')
     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='orders')
+    rice = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -95,6 +98,7 @@ class Food(models.Model):
     description = models.TextField(blank=True)
     have_dessert = models.BooleanField(default=False)
     have_beverage = models.BooleanField(default=False)
+    have_rice = models.BooleanField(default=False)
     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='foods')
     def __str__(self):
         return self.name

@@ -32,8 +32,9 @@ services:
     build:
       context: ../bot
       dockerfile: ../bot/docker/Dockerfile
+    command: python3 main.py
     env_file:
-      - ../.env
+      - ../bot/.env
     depends_on:
       - postgres
     volumes:

@@ -1,7 +1,25 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import requests
 import datetime
+from food.order import get_today_orders
+from bot.persaindate import get_today_in_persian
 from bot.conf import BASE_URL
+
+
+def get_menu_text():
+    today_orders = get_today_orders()
+    today = get_today_in_persian()
+    starter = f" سلام صبح بخیر😁 .\n منوی روز {today}📅.\n لطفا غذای و دورچین مورد نظر خود را انتخاب کنید"
+    text = "\n سفارشات امروز:\n\n"
+    for order in today_orders:
+        rice = 'با برنج' if order['rice'] else 'بدون برنج'
+        food = order['food']['name']
+        dessert = order['dessert']['name'] if order['dessert'] else 'بدون دسر'
+        beverage = order['beverage']['name'] if order['beverage'] else 'بدون نوشیدنی'
+        text += f"👤-سفارش {order['user']}:\n {food}({rice}) - {dessert} - {beverage}\n"
+        
+    return starter+text
+
 
 
 def get_menu_json(day = None):
@@ -19,10 +37,7 @@ def get_menu_json(day = None):
 
 def get_menu_markup():
     menu = get_menu_json()
-    keyboard = [[InlineKeyboardButton(food['name'],callback_data=f"order-food-{food['id']}")] for food in menu['foods']]
-    keyboard.append([InlineKeyboardButton("نوشیدنی‌ها 🥤",callback_data="show-beverages")])
-    keyboard.append([InlineKeyboardButton("دسر ها 🍧",callback_data="show-desserts")])
-    
-
+    keyboard = [[InlineKeyboardButton("نوشیدنی‌ها 🥤",callback_data="show-beverages"),InlineKeyboardButton("دسر ها 🍧",callback_data="show-desserts"),InlineKeyboardButton('غذا ها 🍛',callback_data="show-foods")]]
+    keyboard.append([InlineKeyboardButton("♻️ بازیابی صفحه ♻️",callback_data="refresh-menu")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup

@@ -66,7 +66,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class MakeOrderSerializer(OrderSerializer):
     telegram_id = serializers.IntegerField(required=False,write_only=True)
-    username    = serializers.CharField(required=False,write_only=True)
+    username = serializers.CharField(required=False, allow_blank=True, allow_null=True, write_only=True)
     user_first_name = serializers.CharField(required=False,write_only=True)
     order_type  = serializers.CharField(required=False,write_only=True)
     item_id = serializers.IntegerField(required=False,write_only=True)
@@ -90,7 +90,7 @@ class MakeOrderSerializer(OrderSerializer):
             food_id = item_id
         else:
             raise ValidationError('ابتدا غذا را انتخاب کنید')
-        user = get_user_model().objects.get_or_create(username=username,telegram_id=telegram_id,first_name=user_first_name)[0]
+        user = get_user_model().objects.get_or_create(username=str(telegram_id),telegram_id=telegram_id,first_name=user_first_name)[0]
         food = Food.objects.get(id=food_id)
         rice = food.have_rice
         order = Order.objects.create(food_id=food_id,participant=user.get_participant(company),company=company,rice=rice)

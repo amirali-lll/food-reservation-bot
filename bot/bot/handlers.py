@@ -23,6 +23,7 @@ async def start(update :Update, context : ContextTypes.DEFAULT_TYPE):
     
 
 async def menu(update :Update, context : ContextTypes.DEFAULT_TYPE):
+    logger.info(f"menu requested by {update.effective_user.id}:{update.effective_user.username}|{update.effective_user.first_name}\nin chat {update.effective_chat.id}:{update.effective_chat.title}")
     await send_menu(update,context)
     
     
@@ -40,6 +41,7 @@ async def food_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         order(user,'food',food_id)
         await query.answer('ثبت شد')
     except Exception as e:
+            print(e)
             await query.answer("متاسفانه سفارش شما ثبت نشد. لطفا مجددا تلاش کنید.",show_alert=True)
             
 async def show_desserts(update :Update, context : ContextTypes.DEFAULT_TYPE):
@@ -125,6 +127,11 @@ async def refresh_menu(update :Update, context : ContextTypes.DEFAULT_TYPE):
     await query.answer('صفحه بازیابی شد')
 
 
+
+async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, context.error)
+
     
         
  
@@ -141,6 +148,9 @@ handlers =[
     CallbackQueryHandler(rice_button,pattern='^order-rice-.*$'),
     CallbackQueryHandler(show_foods,pattern='^show-foods$'),
     CallbackQueryHandler(refresh_menu,pattern='^refresh-menu$'),
+    # error handler
+    CallbackQueryHandler(error,pattern='.*'),
+
     
     
     

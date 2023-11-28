@@ -1,4 +1,5 @@
 import datetime
+from django.db import models
 from rest_framework.viewsets import ModelViewSet,ReadOnlyModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
@@ -32,6 +33,24 @@ class OrderViewSet(ModelViewSet):
     # queryset = Order.objects.all()
     
     serializer_class = OrderSerializer
+    
+    @action(detail=False, methods=['get'])
+    def today_export(self, request):
+        # return the each food or dessert and beverage with count of orders
+        company_name = request.company
+        company = get_object_or_404(Company,name=company_name)
+        today      = datetime.date.today()
+        orders    = Order.objects.filter(created_at__date=today,company=company)
+        foods     = orders.values('food__name').annotate(count=models.Count('food'))
+        desserts  = orders.values('dessert__name').annotate(count=models.Count('dessert'))
+        beverages = orders.values('beverage__name').annotate(count=models.Count('beverage'))
+        rice_count = orders.filter(rice=True).count()
+        # dont return if count is zero
+        foods     = [food for food in foods if food['count'] != 0]
+        desserts  = [dessert for dessert in desserts if dessert['count'] != 0]
+        beverages = [beverage for beverage in beverages if beverage['count'] != 0]
+        return Response({'foods':foods,'desserts':desserts,'beverages':beverages,'rice_count':rice_count}, status=status.HTTP_200_OK)
+    
 
         
         

@@ -104,11 +104,11 @@ def today_export():
     beverages = orders_summery['beverages']
     rice_count = orders_summery['rice_count']
     for food in foods:
-        text += f"{food['name']} : {food['count']} عدد\n"
+        text += f"{food['food_name']} : {food['count']} عدد\n"
     text += f"\n\nبرنج : {rice_count} عدد\n\n"
     for dessert in desserts:
-        text += f"{dessert['name']} : {dessert['count']} عدد\n"
+        text += f"{dessert['dessert__name']} : {dessert['count']} عدد\n"
     text += "\n\n"
     for beverage in beverages:
-        text += f"{beverage['name']} : {beverage['count']} عدد\n"
+        text += f"{beverage['beverage__name']} : {beverage['count']} عدد\n"
     return text

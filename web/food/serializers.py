@@ -87,7 +87,7 @@ class MakeOrderSerializer(OrderSerializer):
         telegram_id = validated_data['telegram_id']
         username = validated_data['username']
         user_first_name = validated_data['user_first_name']
-        user_last_name = validated_data.get('user_last_name')
+        user_last_name = validated_data.get('user_last_name','')
         item_id = validated_data['item_id']
         order_type = validated_data['order_type']
         if order_type == 'food':

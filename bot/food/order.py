@@ -62,3 +62,21 @@ def get_today_orders():
     if response.status_code != 200:
         raise Exception("Error: API request unsuccessful.\nresponse status code: " + str(response.status_code)+ "\nresponse: " + str(response.text))
     return response.json()
+
+
+def delete_order(user):
+    url = f'{BASE_URL}orders/order/'
+    headers = {
+        'Content-Type': 'application/json',
+        'company':'BASA',
+        }
+    body = {
+        'telegram_id' : user.id,
+        'username' : user.username,
+        'user_first_name' : user.first_name,
+        }
+    response = requests.delete(url, headers=headers,data=json.dumps(body))
+    if response.status_code != 204:
+        # return error object from response data 
+        return response.json('error')
+    return response.json('message')

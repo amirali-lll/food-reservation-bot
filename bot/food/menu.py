@@ -38,6 +38,7 @@ def get_menu_json(day = None):
 def get_menu_markup():
     menu = get_menu_json()
     keyboard = [[InlineKeyboardButton("نوشیدنی‌ها 🥤",callback_data="show-beverages"),InlineKeyboardButton("دسر ها 🍧",callback_data="show-desserts"),InlineKeyboardButton('غذا ها 🍛',callback_data="show-foods")]]
+    keyboard.append([InlineKeyboardButton("پاک کردن سفارش من ❌",callback_data="delete-my-order")])
     keyboard.append([InlineKeyboardButton("♻️ بازیابی صفحه ♻️",callback_data="refresh-menu")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup

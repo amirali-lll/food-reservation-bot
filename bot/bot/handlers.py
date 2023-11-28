@@ -2,7 +2,7 @@ import json,datetime,requests,logging
 from telegram import Update,InlineKeyboardButton,InlineKeyboardMarkup
 from telegram.ext import CommandHandler,ContextTypes,CallbackQueryHandler
 from bot.conf import HOST,BASE_URL
-from food.order import order,order_rice
+from food.order import order,order_rice,delete_order
 from food.menu import get_menu_json,get_menu_markup,get_menu_text
 
 
@@ -48,6 +48,7 @@ async def show_desserts(update :Update, context : ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     menu = get_menu_json()
     keyboard = [[InlineKeyboardButton(dessert['name'],callback_data=f"order-dessert-{dessert['id']}")] for dessert in menu['desserts']]
+    keyboard.append([InlineKeyboardButton("دسر نمیخوام ❌",callback_data=f"order-dessert-0")])
     keyboard.append([InlineKeyboardButton("منوی اصلی ⬅️",callback_data="main-menu")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     await query.edit_message_text("لطفا دسر مورد نظر خود را انتخاب کنید👇👇👇",reply_markup=reply_markup)
@@ -59,6 +60,7 @@ async def show_beverages(update :Update, context : ContextTypes.DEFAULT_TYPE):
     beverages = menu['beverages']
     beverages = [beverages[i:i + 2] for i in range(0, len(beverages), 2)]
     keyboard = [[InlineKeyboardButton(f"{beverage['name']}",callback_data=f"order-beverage-{beverage['id']}") for beverage in beverage_row] for beverage_row in beverages]
+    keyboard.append([InlineKeyboardButton("نوشیدنی نمیخوام ❌",callback_data=f"order-beverage-0")])
     keyboard.append([InlineKeyboardButton("منوی اصلی ⬅️",callback_data="main-menu")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     await query.edit_message_text("لطفا نوشیدنی مورد نظر خود را انتخاب کنید👇👇👇",reply_markup=reply_markup)
@@ -125,9 +127,15 @@ async def refresh_menu(update :Update, context : ContextTypes.DEFAULT_TYPE):
     except BadRequest as e:
         pass
     await query.answer('صفحه بازیابی شد')
+    
+    
+async def delete_my_order(update :Update, context : ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    user = update.effective_user
+    response = delete_order(user)
+    await query.answer(response)
 
-
-
+x
 async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)

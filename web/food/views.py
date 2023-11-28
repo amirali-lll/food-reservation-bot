@@ -64,7 +64,7 @@ class OrderViewSet(ModelViewSet):
         if request.method == 'DELETE':
             if order:
                 order.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT,data={'error':'سفارشت پاک شد🥲'})
+                return Response(status=status.HTTP_204_NO_CONTENT,data={'message':'سفارشت پاک شد🥲'})
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND, data={'error':'سفارشت رو پیدا نکردیم🥲'})
         if order:

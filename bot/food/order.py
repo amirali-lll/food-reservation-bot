@@ -78,7 +78,6 @@ def delete_order(user):
         'user_first_name' : user.first_name,
         }
     response = requests.delete(url, headers=headers,data=json.dumps(body))
-    response_data = response.json()
     if response.status_code == 404:
         return "اصلا سفارشی برات ثبت نشده بود 🤷‍♂️"
     elif response.status_code != 204:

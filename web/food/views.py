@@ -32,15 +32,7 @@ class OrderViewSet(ModelViewSet):
     # queryset = Order.objects.all()
     
     serializer_class = OrderSerializer
-    
-    # def perform_create(self, serializer):
-    #     serializer.save(participant=self.request.user.participant,company=self.request.company)
-    
-    # def perform_update(self, serializer):
-    #     serializer.save(participant=self.request.user.participant,company=self.request.company)
-    
-    # def perform_destroy(self, instance):
-    #     instance.delete()
+
         
         
     @action(detail=False, methods=['get'])
@@ -54,7 +46,7 @@ class OrderViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
         
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post','delete'])
     def order(self, request):
         # if the order with this telegram_id and today exists, update it otherwise create a new one
         serializer = MakeOrderSerializer(data=request.data)
@@ -69,6 +61,12 @@ class OrderViewSet(ModelViewSet):
                 participant__user__telegram_id=telegram_id,
                 created_at__date=datetime.date.today())\
                 .first()
+        if request.method == 'DELETE':
+            if order:
+                order.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT,data={'error':'سفارشت پاک شد🥲'})
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND, data={'error':'سفارشت رو پیدا نکردیم🥲'})
         if order:
             serializer = MakeOrderSerializer(order, data=request.data)
             serializer.is_valid(raise_exception=True)

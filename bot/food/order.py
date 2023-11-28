@@ -79,7 +79,8 @@ def delete_order(user):
         }
     response = requests.delete(url, headers=headers,data=json.dumps(body))
     response_data = response.json()
-    if response.status_code != 204:
-        # return error object from response data 
-        return "سفارشت پاک نشد  🥲"
+    if response.status_code == 404:
+        return "اصلا سفارشی برات ثبت نشده بود 🤷‍♂️"
+    elif response.status_code != 204:
+        return "مشکلی تو پاک کردن سفارش پیش اومده 😕"
     return "سفارشت پاک شد  🥲"

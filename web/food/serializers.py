@@ -78,7 +78,7 @@ class MakeOrderSerializer(OrderSerializer):
 
     class Meta:
         model  = Order
-        fields = ('id','item_id','company','rice', 'created_at', 'updated_at','telegram_id','username','user_first_name','order_type')
+        fields = ('id','item_id','company','rice', 'created_at', 'updated_at','telegram_id','username','user_first_name','user_last_name','order_type')
     
     
     
@@ -86,8 +86,8 @@ class MakeOrderSerializer(OrderSerializer):
         company = validated_data['company']
         telegram_id = validated_data['telegram_id']
         username = validated_data['username']
-        last_name = validated_data['user_last_name'] if validated_data['user_last_name'] else ''
         user_first_name = validated_data['user_first_name']
+        user_last_name = validated_data.get('user_last_name')
         item_id = validated_data['item_id']
         order_type = validated_data['order_type']
         if order_type == 'food':
@@ -96,7 +96,7 @@ class MakeOrderSerializer(OrderSerializer):
             raise ValidationError('ابتدا غذا را انتخاب کنید')
         user = get_user_model().objects.get_or_create(username=str(telegram_id),telegram_id=telegram_id)[0]
         user.first_name = user_first_name
-        user.last_name = last_name
+        user.last_name = user_last_name
         user.save()
         food = Food.objects.get(id=food_id)
         rice = food.have_rice

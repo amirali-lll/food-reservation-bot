@@ -16,6 +16,7 @@ def order(user,order_type,item_id):
         'telegram_id' : user.id,
         'username' : user.username,
         'user_first_name' : user.first_name,
+        'user_last_name' : user.last_name,
         'item_id' : item_id,
         'order_type' : order_type,
         }
@@ -39,6 +40,7 @@ def order_rice(user,have_rice):
         'telegram_id' : user.id,
         'username' : user.username,
         'user_first_name' : user.first_name,
+        'user_last_name' : user.last_name,
         'order_type' : order_type,
         'rice' : have_rice,
         }

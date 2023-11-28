@@ -78,6 +78,7 @@ async def desserts_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user = update.effective_user
         order_response = order(user,'dessert',dessert_id)
         await query.answer('ثبت شد')
+        await main_menu(update,context)
     except Exception as e:
         print(e)
         await query.answer(f"سفارش ثبت نشد\n{e}",show_alert=True)
@@ -89,6 +90,7 @@ async def beverages_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user = update.effective_user
         order(user,'beverage',beverage_id)
         await query.answer('ثبت شد')
+        await main_menu(update,context)
     except Exception as e:
             await query.answer("متاسفانه سفارش شما ثبت نشد. لطفا مجددا تلاش کنید.",show_alert=True)
             
@@ -134,6 +136,12 @@ async def delete_my_order(update :Update, context : ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     response = delete_order(user)
     await query.answer(response)
+    new_text = get_menu_text()
+    new_markup = get_menu_markup()
+    try:
+        await query.edit_message_text(new_text, reply_markup=new_markup)
+    except BadRequest as e:
+        pass
 
 
 async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):

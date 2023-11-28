@@ -110,10 +110,8 @@ class MakeOrderSerializer(OrderSerializer):
             food = Food.objects.get(id=validated_data['item_id'])
             instance.food = food
             instance.rice = food.have_rice
-            instance.dessert = None if not food.have_dessert else instance.dessert
-            instance.beverage = None if not food.have_beverage else instance.beverage
         else :
-            MAX_DESSERT_OR_BEVERAGE = int(food.have_dessert) + int(food.have_beverage) + int(food.have_rice)
+            MAX_DESSERT_OR_BEVERAGE = int(instance.food.have_dessert) + int(instance.food.have_beverage) + int(instance.food.have_rice)
             current_dessert_or_beverage = int(instance.dessert!=None) + int(instance.beverage!=None) + int(instance.rice)
             if order_type == 'dessert':
                 if  current_dessert_or_beverage < MAX_DESSERT_OR_BEVERAGE:
@@ -133,7 +131,7 @@ class MakeOrderSerializer(OrderSerializer):
                 instance.rice = validated_data['rice']
             else:
                 raise ValidationError('نوع سفارش مشخص نیست')
-        MAX_DESSERT_OR_BEVERAGE = int(food.have_dessert) + int(food.have_beverage) + int(food.have_rice)
+        MAX_DESSERT_OR_BEVERAGE = int(instance.food.have_dessert) + int(instance.food.have_beverage) + int(instance.food.have_rice)
         current_dessert_or_beverage = int(instance.dessert!=None) + int(instance.beverage!=None) + int(instance.rice)
         if MAX_DESSERT_OR_BEVERAGE-current_dessert_or_beverage >0:
             instance.dessert = None

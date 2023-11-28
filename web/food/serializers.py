@@ -103,6 +103,7 @@ class MakeOrderSerializer(OrderSerializer):
         food = Food.objects.get(id=food_id)
         rice = food.have_rice
         order = Order.objects.create(food_id=food_id,participant=user.get_participant(company),company=company,rice=rice)
+        logger.info(f"order {order_type}:{item_id} for user {user.id}:{user.username}|{user.first_name} is successful")
         return order
 
     
@@ -135,8 +136,10 @@ class MakeOrderSerializer(OrderSerializer):
                 raise ValidationError('نوع سفارش مشخص نیست')
         MAX_DESSERT_OR_BEVERAGE = int(instance.food.have_dessert) + int(instance.food.have_beverage) + int(instance.food.have_rice)
         current_dessert_or_beverage = int(instance.dessert!=None) + int(instance.beverage!=None) + int(instance.rice)
-        if MAX_DESSERT_OR_BEVERAGE-current_dessert_or_beverage >0:
+        if MAX_DESSERT_OR_BEVERAGE-current_dessert_or_beverage <0:
             instance.dessert = None
             instance.beverage = None 
+        else :
+            logger.info(f"order {order_type}:{validated_data['item_id']} for user {instance.participant.user.id}:{instance.participant.user.username}|{instance.participant.user.first_name} is successful")
         instance.save()
         return instance

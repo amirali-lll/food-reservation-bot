@@ -78,7 +78,8 @@ def delete_order(user):
         'user_first_name' : user.first_name,
         }
     response = requests.delete(url, headers=headers,data=json.dumps(body))
+    response_data = response.json()
     if response.status_code != 204:
         # return error object from response data 
-        return response.json('error')
-    return response.json('message')
+        return response_data.get('error',"نشد")
+    return response_data.get('message',"شد")

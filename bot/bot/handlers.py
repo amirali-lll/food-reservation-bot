@@ -2,7 +2,7 @@ import json,datetime,requests,logging
 from telegram import Update,InlineKeyboardButton,InlineKeyboardMarkup
 from telegram.ext import CommandHandler,ContextTypes,CallbackQueryHandler
 from bot.conf import HOST,BASE_URL
-from food.order import order,order_rice,delete_order
+from food.order import order,order_rice,delete_order,today_export
 from food.menu import get_menu_json,get_menu_markup,get_menu_text
 
 
@@ -142,11 +142,20 @@ async def delete_my_order(update :Update, context : ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(new_text, reply_markup=new_markup)
     except BadRequest as e:
         pass
+    
+    
+async def today_orders_summery(update :Update, context : ContextTypes.DEFAULT_TYPE):
+    # send summery in pv to user
+    text = today_export()
+    user = update.effective_user
+    await user.send_message(text)
 
 
 async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
+    
+
 
     
         
@@ -165,6 +174,7 @@ handlers =[
     CallbackQueryHandler(show_foods,pattern='^show-foods$'),
     CallbackQueryHandler(refresh_menu,pattern='^refresh-menu$'),
     CallbackQueryHandler(delete_my_order,pattern='^delete-my-order$'),
+    CallbackQueryHandler(today_orders_summery,pattern='^today-export$'),
     # error handler
     CallbackQueryHandler(error,pattern='.*'),
 

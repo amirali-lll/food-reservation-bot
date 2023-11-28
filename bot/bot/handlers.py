@@ -135,7 +135,7 @@ async def delete_my_order(update :Update, context : ContextTypes.DEFAULT_TYPE):
     response = delete_order(user)
     await query.answer(response)
 
-x
+
 async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
@@ -156,6 +156,7 @@ handlers =[
     CallbackQueryHandler(rice_button,pattern='^order-rice-.*$'),
     CallbackQueryHandler(show_foods,pattern='^show-foods$'),
     CallbackQueryHandler(refresh_menu,pattern='^refresh-menu$'),
+    CallbackQueryHandler(delete_my_order,pattern='^delete-my-order$'),
     # error handler
     CallbackQueryHandler(error,pattern='.*'),
 

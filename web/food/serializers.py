@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.serializers import ValidationError
 from .models import DailyMenu,Order ,Participant,Company,Food,Dessert,Beverage
+from .validators import validate_order_price
 
 logger = logging.getLogger(__name__)
 
@@ -90,56 +91,87 @@ class MakeOrderSerializer(OrderSerializer):
         user_last_name = validated_data.get('user_last_name','')
         if not user_last_name:
             user_last_name = ' '
-        item_id = validated_data['item_id']
-        order_type = validated_data['order_type']
-        if order_type == 'food':
-            food_id = item_id
-        else:
-            raise ValidationError('ابتدا غذا را انتخاب کنید')
         user = get_user_model().objects.get_or_create(username=str(telegram_id),telegram_id=telegram_id)[0]
         user.first_name = user_first_name
         user.last_name = user_last_name
         user.save()
-        food = Food.objects.get(id=food_id)
-        rice = food.have_rice
-        order = Order.objects.create(food_id=food_id,participant=user.get_participant(company),company=company,rice=rice)
+        item_id = validated_data['item_id']
+        order_type = validated_data['order_type']
+        # set item order, it may be food or dessert or beverage
+        order = None
+        item_price = 0
+        if order_type == 'food':
+            food = Food.objects.get(id=item_id)
+            item_price = food.price
+            rice = food.have_rice
+            if rice:
+                item_price += food.rice_price
+            validate_order_price(order,item_price)
+            order = Order.objects.create(food=food,rice=rice,company=company,participant=user.get_participant(company))
+        elif order_type == 'dessert':
+            item_price = Dessert.objects.get(id=item_id).price
+            validate_order_price(order,item_price)
+            order = Order.objects.create(dessert_id=item_id,company=company,participant=user.get_participant(company))
+        elif order_type == 'beverage':
+            item_price = Beverage.objects.get(id=item_id).price
+            validate_order_price(order,item_price)
+            order = Order.objects.create(beverage_id=item_id,company=company,participant=user.get_participant(company))
+        else:
+            raise ValidationError('ابتدا غذا را انتخاب کنید')
+            
         logger.info(f"order {order_type}:{item_id} for user {user.id}:{user.username}|{user.first_name} is successful")
         return order
 
     
     def update(self, instance, validated_data):
         order_type = validated_data['order_type']
+        item_id = validated_data.get('item_id',0)
+        item_price = 0
         if order_type == 'food':
-            food = Food.objects.get(id=validated_data['item_id'])
-            instance.food = food
-            instance.rice = food.have_rice
-        else :
-            MAX_DESSERT_OR_BEVERAGE = int(instance.food.have_dessert) + int(instance.food.have_beverage) + int(instance.food.have_rice)
-            current_dessert_or_beverage = int(instance.dessert!=None) + int(instance.beverage!=None) + int(instance.rice)
-            if order_type == 'dessert':
-                if  current_dessert_or_beverage < MAX_DESSERT_OR_BEVERAGE:
-                    dessert_id = validated_data['item_id']
-                    instance.dessert_id = dessert_id if dessert_id else None
-                else :
-                    raise ValidationError('نمیتوانید دسر را برای این غذا انتخاب کنید')
-            elif order_type == 'beverage':
-                if  current_dessert_or_beverage < MAX_DESSERT_OR_BEVERAGE:
-                    beverage_id = validated_data['item_id']
-                    instance.beverage_id = beverage_id if beverage_id else None
-                else :
-                    raise ValidationError('نمیتوانید نوشیدنی را برای این غذا انتخاب کنید')
-            elif order_type == 'rice':
-                if not instance.food.have_rice:
-                    raise ValidationError('برای این غذا برنج تعریف نشده است')
-                instance.rice = validated_data['rice']
+            if item_id == 0:
+                instance.food = None
+                instance.rice = False
             else:
-                raise ValidationError('نوع سفارش مشخص نیست')
-        MAX_DESSERT_OR_BEVERAGE = int(instance.food.have_dessert) + int(instance.food.have_beverage) + int(instance.food.have_rice)
-        current_dessert_or_beverage = int(instance.dessert!=None) + int(instance.beverage!=None) + int(instance.rice)
-        if MAX_DESSERT_OR_BEVERAGE-current_dessert_or_beverage <0:
-            instance.dessert = None
-            instance.beverage = None 
-        else :
-            logger.info(f"order {order_type}:{validated_data['item_id']} for user {instance.participant.user.id}:{instance.participant.user.username}|{instance.participant.user.first_name} is successful")
+                food = Food.objects.get(id=item_id)
+                item_price = food.price
+                validate_order_price(instance,item_price)
+                instance.food = food
+                rice = food.have_rice
+                if rice:
+                    item_price += food.rice_price
+                try:
+                    validate_order_price(instance,item_price)
+                    instance.rice = rice
+                except ValidationError as e:
+                    instance.rice = False
+                    logger.error(f"rice price is more than max order price for order {instance.id} and food {food.id}")
+                    logger.error(e)
+        elif order_type == 'dessert':
+            if item_id == 0:
+                instance.dessert = None
+            else:
+                item_price = Dessert.objects.get(id=item_id).price
+                validate_order_price(instance,item_price)
+                instance.dessert_id = item_id
+        elif order_type == 'beverage':
+            if item_id == 0:
+                instance.beverage = None
+            else:
+                item_price = Beverage.objects.get(id=item_id).price
+                validate_order_price(instance,item_price)
+                instance.beverage_id = item_id
+        elif order_type == 'rice':
+            if not instance.food:
+                raise ValidationError('😕ابتدا غذا را انتخاب کنید')
+            if not instance.food.have_rice:
+                raise ValidationError('🥲برای این غذا برنج نداریم')
+            wanna_rice = validated_data['rice']
+            if wanna_rice:
+                validate_order_price(instance,instance.food.rice_price)
+                instance.rice = True
+            else:
+                instance.rice = False
+        else:
+            raise ValidationError('نوع سفارش را انتخاب کنید')
         instance.save()
         return instance

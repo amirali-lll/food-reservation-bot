@@ -24,7 +24,7 @@ class Participant(models.Model):
     
     
 class Order(models.Model):
-    food = models.ForeignKey('Food', on_delete=models.CASCADE)
+    food = models.ForeignKey('Food', on_delete=models.CASCADE, null=True, blank=True)
     dessert = models.ForeignKey('Dessert', on_delete=models.CASCADE, null=True, blank=True)
     beverage = models.ForeignKey('Beverage', on_delete=models.CASCADE, null=True, blank=True)
     participant = models.ForeignKey('Participant', on_delete=models.CASCADE, related_name='orders')
@@ -36,8 +36,19 @@ class Order(models.Model):
     class Meta:
         verbose_name = 'سفارش'
         verbose_name_plural = 'سفارشات'
-
-
+        
+        
+    def get_price(self):
+        price = 0
+        if self.food:
+            price += self.food.price
+            if self.rice:
+                price += self.food.rice_price
+        if self.dessert:
+            price += self.dessert.price
+        if self.beverage:
+            price += self.beverage.price
+        return price
 
 class DailyMenu(models.Model):
     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='daily_menus')
@@ -94,14 +105,16 @@ class Company(models.Model):
 
 
 class Food(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    have_dessert = models.BooleanField(default=False)
-    have_beverage = models.BooleanField(default=False)
-    have_rice = models.BooleanField(default=False)
-    company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='foods')
+    name = models.CharField(max_length=100,verbose_name='نام')
+    description = models.TextField(blank=True,verbose_name='توضیحات')
+    have_rice = models.BooleanField(default=False,verbose_name='برنج دارد')
+    price = models.PositiveIntegerField(default=0,verbose_name='قیمت')
+    rice_price = models.PositiveIntegerField(default=settings.RICE_PRICE,verbose_name='قیمت برنج')
+    restaurant = models.CharField(max_length=100,verbose_name='رستوران',blank=True,null=True)
+    company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='foods',verbose_name='شرکت')
     def __str__(self):
-        return self.name
+        
+        return f"{self.name} - {self.restaurant}"
     
     class Meta:
         verbose_name = 'غذا'
@@ -109,8 +122,9 @@ class Food(models.Model):
         unique_together = ('name', 'company')
     
 class Dessert(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True)
+    name = models.CharField(max_length=100, unique=True,verbose_name='نام')
+    description = models.TextField(blank=True,verbose_name='توضیحات')
+    price = models.PositiveIntegerField(default=0,verbose_name='قیمت')
     def __str__(self):
         return self.name
     
@@ -119,8 +133,9 @@ class Dessert(models.Model):
         verbose_name_plural = 'دسرها'
     
 class Beverage(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True)
+    name = models.CharField(max_length=100, unique=True,verbose_name='نام')
+    description = models.TextField(blank=True,verbose_name='توضیحات')
+    price = models.PositiveIntegerField(default=0,verbose_name='قیمت')
     def __str__(self):
         return self.name
     

@@ -13,7 +13,7 @@ def get_menu_text():
     text = "\n سفارشات امروز:\n\n"
     for order in today_orders:
         rice = 'با برنج' if order['rice'] else 'بدون برنج'
-        food = order['food']['name']
+        food = order['food']['name'] if order['food'] else 'بدون غذا'
         dessert = order['dessert']['name'] if order['dessert'] else 'بدون دسر'
         beverage = order['beverage']['name'] if order['beverage'] else 'بدون نوشیدنی'
         text += f"👤-سفارش {order['user']}:\n {food}({rice}) - {dessert} - {beverage}\n"

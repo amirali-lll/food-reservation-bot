@@ -47,7 +47,11 @@ async def food_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def show_desserts(update :Update, context : ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     menu = get_menu_json()
-    keyboard = [[InlineKeyboardButton(dessert['name'],callback_data=f"order-dessert-{dessert['id']}")] for dessert in menu['desserts']]
+    # keyboard = [[InlineKeyboardButton(dessert['name'],callback_data=f"order-dessert-{dessert['id']}")] for dessert in menu['desserts']]
+    # show desserts 2 in a row
+    desserts = menu['desserts']
+    desserts = [desserts[i:i + 2] for i in range(0, len(desserts), 2)]
+    keyboard = [[InlineKeyboardButton(f"{dessert['name']}",callback_data=f"order-dessert-{dessert['id']}") for dessert in dessert_row] for dessert_row in desserts]
     keyboard.append([InlineKeyboardButton("دسر نمیخوام ❌",callback_data=f"order-dessert-0")])
     keyboard.append([InlineKeyboardButton("منوی اصلی ⬅️",callback_data="main-menu")])
     reply_markup = InlineKeyboardMarkup(keyboard)

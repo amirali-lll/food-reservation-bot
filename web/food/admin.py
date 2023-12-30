@@ -45,6 +45,7 @@ class FoodAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     search_fields = ('name',)
     autocomplete_fields = ('company',)
+    list_select_related = ('company',)
     
 @admin.register(Dessert)
 class DessertAdmin(admin.ModelAdmin):

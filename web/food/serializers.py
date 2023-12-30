@@ -84,6 +84,7 @@ class MakeOrderSerializer(OrderSerializer):
     
     
     def create(self, validated_data):
+        logger.info(f"create order for user {validated_data['telegram_id']}...")
         company = validated_data['company']
         telegram_id = validated_data['telegram_id']
         username = validated_data['username']
@@ -124,54 +125,38 @@ class MakeOrderSerializer(OrderSerializer):
 
     
     def update(self, instance, validated_data):
+        logger.info(f"update order {instance.id} for user {instance.participant.user.id}:{instance.participant.user.username}|{instance.participant.user.first_name} is successful")
         order_type = validated_data['order_type']
         item_id = validated_data.get('item_id',0)
-        item_price = 0
         if order_type == 'food':
-            if item_id == 0:
+            if item_id==0:
                 instance.food = None
                 instance.rice = False
-            else:
+            else :
                 food = Food.objects.get(id=item_id)
-                item_price = food.price
-                validate_order_price(instance,item_price)
                 instance.food = food
-                rice = food.have_rice
-                if rice:
-                    item_price += food.rice_price
-                try:
-                    validate_order_price(instance,item_price)
-                    instance.rice = rice
-                except ValidationError as e:
-                    instance.rice = False
-                    logger.error(f"rice price is more than max order price for order {instance.id} and food {food.id}")
-                    logger.error(e)
+                instance.rice = food.have_rice
         elif order_type == 'dessert':
-            if item_id == 0:
+            if item_id==0:
                 instance.dessert = None
             else:
-                item_price = Dessert.objects.get(id=item_id).price
-                validate_order_price(instance,item_price)
-                instance.dessert_id = item_id
+                dessert = Dessert.objects.get(id=item_id)
+                instance.dessert = dessert
         elif order_type == 'beverage':
-            if item_id == 0:
+            if item_id==0:
                 instance.beverage = None
             else:
-                item_price = Beverage.objects.get(id=item_id).price
-                validate_order_price(instance,item_price)
-                instance.beverage_id = item_id
+                beverage = Beverage.objects.get(id=item_id)
+                instance.beverage = beverage
         elif order_type == 'rice':
             if not instance.food:
                 raise ValidationError('😕ابتدا غذا را انتخاب کنید')
             if not instance.food.have_rice:
                 raise ValidationError('🥲برای این غذا برنج نداریم')
             wanna_rice = validated_data['rice']
-            if wanna_rice:
-                validate_order_price(instance,instance.food.rice_price)
-                instance.rice = True
-            else:
-                instance.rice = False
+            instance.rice = wanna_rice
         else:
             raise ValidationError('نوع سفارش را انتخاب کنید')
+        validate_order_price(instance,0)
         instance.save()
         return instance

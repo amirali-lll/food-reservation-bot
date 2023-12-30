@@ -42,7 +42,7 @@ async def food_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.answer('ثبت شد')
     except Exception as e:
             print(e)
-            await query.answer("متاسفانه سفارش شما ثبت نشد. لطفا مجددا تلاش کنید.",show_alert=True)
+            await query.answer(f"سفارش ثبت نشد{e}",show_alert=True)
             
 async def show_desserts(update :Update, context : ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -96,7 +96,7 @@ async def beverages_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.answer('ثبت شد')
         await main_menu(update,context)
     except Exception as e:
-            await query.answer("متاسفانه سفارش شما ثبت نشد. لطفا مجددا تلاش کنید.",show_alert=True)
+            await query.answer(f"سفارش ثبت نشد🥲{e}",show_alert=True)
             
             
 async def rice_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -162,12 +162,26 @@ async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     
-        
+# a command handler to says the new release changes
+async def new_release(update :Update, context : ContextTypes.DEFAULT_TYPE):
+    text = """
+    سلام دوستان👋
+    تغییرات نسخه جدید ربات:
+    - تغییر منطق سفارش غذا که ازین به بعد بر اساس قیمت سفارش داده میشن و طبق حداکثری که شرکت تعیین میکنه
+    - اضافه شدن دسر ها و نوشیدینی‌های جدید
+    
+    
+    
+    ازونجایی که منطق ربات کاملا تغییر کرده احتمال داره مشکلاتی باشه😵‍💫
+    پس اگه دیدید بات مشکلی داره صبور باشید و گزارش کنید تا برطرف بشه🫡
+    """
+    await update.message.reply_text(text)
  
 
 handlers =[
     CommandHandler("start",start),
     CommandHandler("menu",menu),
+    CommandHandler("new_release",new_release),
     CallbackQueryHandler(food_button,pattern='^order-food-\d+$'),
     CallbackQueryHandler(show_desserts,pattern='^show-desserts$'),
     CallbackQueryHandler(show_beverages,pattern='^show-beverages$'),

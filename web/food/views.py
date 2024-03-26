@@ -1,4 +1,5 @@
 import datetime
+import logging
 from django.db import models
 from rest_framework.viewsets import ModelViewSet,ReadOnlyModelViewSet
 from rest_framework.permissions import IsAuthenticated
@@ -9,7 +10,7 @@ from django.shortcuts import get_object_or_404
 from .models import DailyMenu,Order,Company
 from .serializers import DailyMenuSerializer,OrderSerializer,MakeOrderSerializer
 
-
+logger = logging.getLogger(__name__)
 
 
 
@@ -67,6 +68,9 @@ class OrderViewSet(ModelViewSet):
         
     @action(detail=False, methods=['post','delete'])
     def order(self, request):
+        logger.info(request.data)
+        logger.info(request.method)
+        logger.info(f"order for user {request.data['telegram_id']}...")
         # if the order with this telegram_id and today exists, update it otherwise create a new one
         serializer = MakeOrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -86,12 +90,14 @@ class OrderViewSet(ModelViewSet):
                 return Response(status=status.HTTP_204_NO_CONTENT,data={'message':'سفارشت پاک شد🥲'})
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND, data={'error':'سفارشت رو پیدا نکردیم🥲'})
-        if order:
-            serializer = MakeOrderSerializer(order, data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
         try:
+            logger.info(f"order for user {telegram_id}%%%...")
+            if order:
+                logger.info(f"update order for user {telegram_id}%%%...")
+                serializer = MakeOrderSerializer(order, data=request.data)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
             serializer.save(company=company)
         except Exception as e:
             print(e)
